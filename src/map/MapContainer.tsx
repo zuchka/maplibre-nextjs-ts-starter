@@ -1,5 +1,7 @@
 import { throttle } from 'lodash'
+import maplibregl from 'maplibre-gl'
 import dynamic from 'next/dynamic'
+import { Protocol } from 'pmtiles'
 import { useCallback, useEffect, useMemo } from 'react'
 import type { ErrorEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl'
 import Map from 'react-map-gl'
@@ -77,6 +79,14 @@ const MapInner = () => {
     return () => clearTimeout(timeout)
   }, [allPlacesBounds, handleMapMove, map])
 
+  useEffect(() => {
+    const protocol = new Protocol()
+    maplibregl.addProtocol('pmtiles', protocol.tile)
+    return () => {
+      maplibregl.removeProtocol('pmtiles')
+    }
+  }, [])
+
   return (
     <div className="absolute overflow-hidden inset-0 bg-mapBg" ref={viewportRef}>
       {allPlacesBounds && (
@@ -88,7 +98,26 @@ const MapInner = () => {
           onLoad={onLoad}
           onMove={onMapMove}
           style={{ width: viewportWidth, height: viewportHeight }}
-          mapStyle={`https://api.maptiler.com/maps/basic-v2/style.json?key=${AppConfig.map.tileKey}`}
+          mapStyle={{
+            version: 8,
+            sources: {
+              sample: {
+                type: 'vector',
+                url: 'pmtiles://https://bucket-production-a64f.up.railway.app/utrecht/my_area.pmtiles',
+              },
+            },
+            layers: [
+              {
+                id: 'water',
+                source: 'sample',
+                'source-layer': 'water',
+                type: 'line',
+                paint: {
+                  'line-color': '#999',
+                },
+              },
+            ],
+          }}
           reuseMaps
           // disable map rotation since it's not correctly calculated into the bounds atm :')
           dragRotate={false}

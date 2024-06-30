@@ -31,7 +31,7 @@ export const clusterCountLayer = (categoryId: string): LayerProps => ({
   source: `source-${categoryId}`, // Use the correct source ID
   filter: ['has', 'point_count'],
   layout: {
-    'text-field': '{point_count_abbreviated}',
+    // 'text-field': '{point_count_abbreviated}',
     'text-font': ['Catamaran Bold', 'Arial Unicode MS Bold'],
     'text-size': 10,
     'text-allow-overlap': true,
